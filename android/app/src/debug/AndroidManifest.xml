@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 개발 중 Metro 번들러 연결용. 출시 빌드에는 포함되지 않음 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

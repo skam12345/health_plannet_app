@@ -72,6 +72,15 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+/**
+ * 출시용 서명 키 정보 (android/keystore.properties, git 제외)
+ */
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -85,6 +94,14 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    // Windows 경로 길이(260자) 제한 회피: 네이티브 빌드 폴더를 짧은 임시 경로로
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        externalNativeBuild {
+            cmake {
+                buildStagingDirectory = file("${System.getProperty('java.io.tmpdir')}/hp-cxx")
+            }
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -92,15 +109,21 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
