@@ -13,10 +13,19 @@
 - 쉬는 날 체크 (초록색), 치팅 데이 체크 (주황색)
 - 데이터는 기기 내부(AsyncStorage)에만 저장
 
+## v1.1 기능
+- 오늘의 운동 알림: 계획을 세워둔 날, 정한 시각(기본 오전 8:00)에 오늘 할 운동을 하루 한 번 알림
+  - 앱이 백그라운드에 있거나 꺼져 있어도 시스템 예약 알림으로 도착 (재부팅 후에도 유지)
+  - 메뉴 › 알림 설정에서 켜기/끄기, 시각 변경, 테스트 알림
+
 ## 미리보기
 | 주간 계획표 | 편집 | 메뉴 |
 | --- | --- | --- |
-| <img src="docs/preview/1-weekly-full.jpg" width="220"/> | <img src="docs/preview/3-edit-workout.jpg" width="220"/> | <img src="docs/preview/5-menu.jpg" width="220"/> |
+| <img src="docs/preview/1-weekly-full.jpg" width="220"/> | <img src="docs/preview/3-edit-workout.jpg" width="220"/> | <img src="docs/preview/6-menu-v1.1.png" width="220"/> |
+
+| 알림 설정 |
+| --- |
+| <img src="docs/preview/7-notification-settings.png" width="220"/> |
 
 ## 개발
 ```bash

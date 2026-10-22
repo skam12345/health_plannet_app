@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import DayCard, { markColor } from '../components/DayCard';
 import DayEditor from '../components/DayEditor';
 import { WEEKDAYS, formatRange, getThisWeek, toKey } from '../date';
+import { syncReminders } from '../notifications';
 import { DayPlan, PlanMap, isEmptyPlan, loadPlans, savePlans } from '../storage';
 import { colors, radius } from '../theme';
 
@@ -22,8 +23,8 @@ export default function WeeklyPlanScreen() {
     if (isEmptyPlan(plan)) delete next[key];
     else next[key] = plan;
     setPlans(next);
-    savePlans(next);
     setEditing(null);
+    savePlans(next).then(syncReminders);
   };
 
   const weekPlans = week.map(d => plans[toKey(d)]);

@@ -4,14 +4,19 @@
  * @format
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
 import WeeklyPlanScreen from './src/screens/WeeklyPlanScreen';
+import { loadSettings, requestPermission, syncReminders } from './src/notifications';
 import { colors, radius } from './src/theme';
 
-// 메뉴는 1.0에서 '이번 주 헬스계획표' 하나. 이후 항목을 여기에 추가.
-const MENU = [{ key: 'weekly', label: '이번 주 헬스계획표', icon: '📅' }] as const;
+// 메뉴 항목. 새 화면은 여기에 추가.
+const MENU = [
+  { key: 'weekly', label: '이번 주 헬스계획표', icon: '📅' },
+  { key: 'notify', label: '알림 설정', icon: '🔔' },
+] as const;
 type MenuKey = (typeof MENU)[number]['key'];
 
 function App() {
@@ -27,6 +32,15 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
   const [screen, setScreen] = useState<MenuKey>('weekly');
+
+  // 앱 시작 시 알림 권한 확인 후 예약 알림 동기화
+  useEffect(() => {
+    (async () => {
+      const s = await loadSettings();
+      if (s.enabled) await requestPermission();
+      await syncReminders();
+    })();
+  }, []);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -44,6 +58,7 @@ function AppContent() {
 
       <View style={[styles.body, { paddingBottom: insets.bottom }]}>
         {screen === 'weekly' && <WeeklyPlanScreen />}
+        {screen === 'notify' && <NotificationSettingsScreen />}
       </View>
 
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
@@ -62,7 +77,7 @@ function AppContent() {
                 <Text style={styles.menuLabel}>{m.label}</Text>
               </Pressable>
             ))}
-            <Text style={styles.version}>v1.0</Text>
+            <Text style={styles.version}>v1.1</Text>
           </View>
         </Pressable>
       </Modal>

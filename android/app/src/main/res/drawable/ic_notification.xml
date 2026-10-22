@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 상태바 알림 아이콘: 토성 실루엣 (흰색 단색) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,6.2a5.8,5.8 0,1 0,0.001 0z" />
+    <group
+        android:pivotX="12"
+        android:pivotY="12"
+        android:rotation="-18">
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="1.5"
+            android:pathData="M1.2,12a10.8,3.1 0,1 0,21.6 0a10.8,3.1 0,1 0,-21.6 0z" />
+    </group>
+</vector>
