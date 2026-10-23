@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { DayPlan } from '../storage';
+import { BodyPart, DayPlan, exercisesOf } from '../storage';
 import { colors, radius } from '../theme';
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   plan?: DayPlan;
   isToday: boolean;
   onPress: () => void;
+  onPartPress?: (part: BodyPart) => void; // 부위 이름 탭 → 운동 목록
 };
 
 export function markColor(plan?: DayPlan): string {
@@ -21,7 +22,7 @@ export function markColor(plan?: DayPlan): string {
   return colors.border;
 }
 
-export default function DayCard({ date, weekday, plan, isToday, onPress }: Props) {
+export default function DayCard({ date, weekday, plan, isToday, onPress, onPartPress }: Props) {
   const stripe = markColor(plan);
   const hasWorkout = !!plan && !plan.rest && (plan.parts.length > 0 || plan.cardio);
   const isWeekend = weekday === '토' || weekday === '일';
@@ -55,9 +56,28 @@ export default function DayCard({ date, weekday, plan, isToday, onPress }: Props
             <Text style={styles.title} numberOfLines={2}>
               근력 운동{' '}
               <Text style={styles.parts}>
-                [{plan!.parts.length > 0 ? plan!.parts.join(' · ') : '미정'}]
+                [
+                {plan!.parts.length > 0
+                  ? plan!.parts.map((p, i) => (
+                      <Text key={p}>
+                        {i > 0 && ' · '}
+                        <Text style={styles.partLink} onPress={onPartPress && (() => onPartPress(p))}>
+                          {p}
+                        </Text>
+                      </Text>
+                    ))
+                  : '미정'}
+                ]
               </Text>
             </Text>
+            {plan!.parts.map(p => {
+              const list = exercisesOf(plan, p);
+              return list.length > 0 ? (
+                <Text key={p} style={styles.exLine} numberOfLines={2}>
+                  <Text style={styles.exPart}>{p}</Text>  {list.join(' · ')}
+                </Text>
+              ) : null;
+            })}
             <View
               style={[
                 styles.cardioTag,
@@ -144,6 +164,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: colors.text, fontSize: 17, fontWeight: '700' },
   parts: { color: colors.accent, fontWeight: '800' },
+  exLine: { color: colors.textDim, fontSize: 13, lineHeight: 19, marginTop: -2 },
+  exPart: { color: colors.text, fontWeight: '800' },
+  partLink: { textDecorationLine: 'underline', textDecorationColor: colors.textFaint },
   cardioTag: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -77,7 +77,7 @@ function AppContent() {
                 <Text style={styles.menuLabel}>{m.label}</Text>
               </Pressable>
             ))}
-            <Text style={styles.version}>v1.1</Text>
+            <Text style={styles.version}>v1.2</Text>
           </View>
         </Pressable>
       </Modal>

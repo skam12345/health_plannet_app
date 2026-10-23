@@ -18,14 +18,21 @@
   - 앱이 백그라운드에 있거나 꺼져 있어도 시스템 예약 알림으로 도착 (재부팅 후에도 유지)
   - 메뉴 › 알림 설정에서 켜기/끄기, 시각 변경, 테스트 알림
 
+## v1.2 기능
+- 근력 운동 부위에 **팔** 추가 (가슴 / 등 / 복근 / 어깨 / 팔 / 하체)
+- 부위별 운동 목록: 머신·케이블 / 맨몸 / 덤벨·프리웨이트로 구분
+  - 요일 편집창의 부위 칩 ☰, 또는 요일 카드의 부위 이름을 눌러 열기
+- 목록의 운동을 누르면 그 요일 계획에 기록 (다시 누르면 해제), 카드와 아침 알림에 표시
+- ▶ 를 누르면 인체 모형이 그 운동 동작을 반복하는 애니메이션 (주로 쓰는 근육은 파란색)
+
 ## 미리보기
 | 주간 계획표 | 편집 | 메뉴 |
 | --- | --- | --- |
 | <img src="docs/preview/1-weekly-full.jpg" width="220"/> | <img src="docs/preview/3-edit-workout.jpg" width="220"/> | <img src="docs/preview/6-menu-v1.1.png" width="220"/> |
 
-| 알림 설정 |
-| --- |
-| <img src="docs/preview/7-notification-settings.png" width="220"/> |
+| 알림 설정 | 운동 기록 | 동작 애니메이션 |
+| --- | --- | --- |
+| <img src="docs/preview/7-notification-settings.png" width="220"/> | <img src="docs/preview/9-cards-exercises.png" width="220"/> | <img src="docs/preview/13-exercise-animation.gif" width="220"/> |
 
 ## 개발
 ```bash

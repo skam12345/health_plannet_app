@@ -2,14 +2,26 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import DayCard, { markColor } from '../components/DayCard';
 import DayEditor from '../components/DayEditor';
+import ExerciseListModal from '../components/ExerciseListModal';
 import { WEEKDAYS, formatRange, getThisWeek, toKey } from '../date';
 import { syncReminders } from '../notifications';
-import { DayPlan, PlanMap, isEmptyPlan, loadPlans, savePlans } from '../storage';
+import {
+  BodyPart,
+  DayPlan,
+  PlanMap,
+  exercisesOf,
+  isEmptyPlan,
+  loadPlans,
+  savePlans,
+  toggleExercise,
+} from '../storage';
 import { colors, radius } from '../theme';
 
 export default function WeeklyPlanScreen() {
   const [plans, setPlans] = useState<PlanMap>({});
   const [editing, setEditing] = useState<number | null>(null);
+  // 카드에서 부위 이름을 눌러 연 운동 목록: 어느 날짜의 어느 부위인지
+  const [listTarget, setListTarget] = useState<{ index: number; part: BodyPart } | null>(null);
   const week = useMemo(() => getThisWeek(), []);
   const todayKey = toKey(new Date());
 
@@ -17,14 +29,20 @@ export default function WeeklyPlanScreen() {
     loadPlans().then(setPlans);
   }, []);
 
-  const save = (index: number, plan: DayPlan) => {
+  const persist = (index: number, plan: DayPlan) => {
     const key = toKey(week[index]);
-    const next = { ...plans };
-    if (isEmptyPlan(plan)) delete next[key];
-    else next[key] = plan;
-    setPlans(next);
+    setPlans(prev => {
+      const next = { ...prev };
+      if (isEmptyPlan(plan)) delete next[key];
+      else next[key] = plan;
+      savePlans(next).then(syncReminders);
+      return next;
+    });
+  };
+
+  const save = (index: number, plan: DayPlan) => {
+    persist(index, plan);
     setEditing(null);
-    savePlans(next).then(syncReminders);
   };
 
   const weekPlans = week.map(d => plans[toKey(d)]);
@@ -76,6 +94,7 @@ export default function WeeklyPlanScreen() {
             plan={weekPlans[i]}
             isToday={toKey(d) === todayKey}
             onPress={() => setEditing(i)}
+            onPartPress={part => setListTarget({ index: i, part })}
           />
         ))}
       </ScrollView>
@@ -90,6 +109,20 @@ export default function WeeklyPlanScreen() {
         plan={editing !== null ? weekPlans[editing] : undefined}
         onClose={() => setEditing(null)}
         onSave={p => editing !== null && save(editing, p)}
+      />
+      <ExerciseListModal
+        part={listTarget?.part ?? null}
+        dayLabel={
+          listTarget
+            ? `${week[listTarget.index].getMonth() + 1}월 ${week[listTarget.index].getDate()}일 (${WEEKDAYS[listTarget.index]})`
+            : undefined
+        }
+        selected={listTarget ? exercisesOf(weekPlans[listTarget.index], listTarget.part) : []}
+        onToggle={name =>
+          listTarget &&
+          persist(listTarget.index, toggleExercise(weekPlans[listTarget.index], listTarget.part, name))
+        }
+        onClose={() => setListTarget(null)}
       />
     </>
   );

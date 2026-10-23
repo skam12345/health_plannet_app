@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import notifee, {
   AlarmType,
   AndroidImportance,
+  AndroidStyle,
   AuthorizationStatus,
   TriggerType,
 } from '@notifee/react-native';
@@ -67,9 +68,13 @@ export function describePlan(plan: DayPlan): { title: string; body: string } {
     const parts = plan.parts.length > 0 ? plan.parts.join(' · ') : '미정';
     const title =
       plan.parts.length > 0 ? `오늘은 ${plan.parts.join('·')} 운동 하는 날 💪` : '오늘은 운동하는 날 💪';
+    const picked = plan.parts.flatMap(p => plan.exercises?.[p] ?? []);
     return {
       title,
-      body: `근력 운동 [${parts}] · ${plan.cardio ? '유산소 있음' : '유산소 없음'}${cheat}`,
+      body:
+        `근력 운동 [${parts}] · ${plan.cardio ? '유산소 있음' : '유산소 없음'}${cheat}` +
+        (picked.length > 0 ? `
+${picked.join(', ')}` : ''),
     };
   }
   return { title: '오늘은 치팅 데이 🍔', body: '맛있게 먹고 내일 다시 달려요!' };
@@ -119,6 +124,8 @@ export async function syncReminders(): Promise<void> {
             smallIcon: 'ic_notification',
             color: '#3B82F6',
             pressAction: { id: 'default' },
+            // 고른 운동까지 여러 줄로 보이도록
+            style: { type: AndroidStyle.BIGTEXT, text: body },
           },
         },
         {

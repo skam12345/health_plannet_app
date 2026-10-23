@@ -9,7 +9,8 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BODY_PARTS, BodyPart, DayPlan, emptyPlan } from '../storage';
+import { BODY_PARTS, BodyPart, DayPlan, emptyPlan, exercisesOf, toggleExercise, withoutPart } from '../storage';
+import ExerciseListModal from './ExerciseListModal';
 import { colors, radius } from '../theme';
 
 type Props = {
@@ -59,18 +60,18 @@ export default function DayEditor({ visible, title, plan, onClose, onSave }: Pro
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const [draft, setDraft] = useState<DayPlan>(emptyPlan());
+  const [listPart, setListPart] = useState<BodyPart | null>(null);
 
   useEffect(() => {
-    if (visible) setDraft(plan ? { ...plan, parts: [...plan.parts] } : emptyPlan());
+    if (visible) setDraft(plan ? { ...plan, parts: [...plan.parts], exercises: { ...plan.exercises } } : emptyPlan());
   }, [visible, plan]);
 
   const togglePart = (p: BodyPart) =>
-    setDraft(d => ({
-      ...d,
-      parts: d.parts.includes(p)
-        ? d.parts.filter(x => x !== p)
-        : BODY_PARTS.filter(x => x === p || d.parts.includes(x)),
-    }));
+    setDraft(d =>
+      d.parts.includes(p)
+        ? withoutPart(d, p)
+        : { ...d, parts: BODY_PARTS.filter(x => x === p || d.parts.includes(x)) },
+    );
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -89,17 +90,26 @@ export default function DayEditor({ visible, title, plan, onClose, onSave }: Pro
           />
 
           <Text style={[styles.section, draft.rest && styles.disabled]}>근력 운동 부위</Text>
+          <Text style={[styles.hint, draft.rest && styles.disabled]}>부위를 눌러 선택 · ☰ 를 눌러 운동 골라 기록</Text>
           <View style={[styles.chips, draft.rest && styles.disabled]}>
             {BODY_PARTS.map(p => {
               const on = draft.parts.includes(p);
               return (
-                <Pressable
-                  key={p}
-                  disabled={draft.rest}
-                  onPress={() => togglePart(p)}
-                  style={[styles.chip, on && styles.chipOn]}>
-                  <Text style={[styles.chipText, on && styles.chipTextOn]}>{p}</Text>
-                </Pressable>
+                <View key={p} style={[styles.chip, on && styles.chipOn]}>
+                  <Pressable disabled={draft.rest} onPress={() => togglePart(p)} style={styles.chipMain}>
+                    <Text style={[styles.chipText, on && styles.chipTextOn]}>
+                      {p}
+                      {exercisesOf(draft, p).length > 0 ? ` ${exercisesOf(draft, p).length}` : ''}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setListPart(p)}
+                    style={[styles.chipList, on && styles.chipListOn]}
+                    hitSlop={4}
+                    accessibilityLabel={`${p} 운동 목록`}>
+                    <Text style={[styles.chipListText, on && styles.chipTextOn]}>☰</Text>
+                  </Pressable>
+                </View>
               );
             })}
           </View>
@@ -133,6 +143,13 @@ export default function DayEditor({ visible, title, plan, onClose, onSave }: Pro
           </Pressable>
         </View>
       </View>
+      <ExerciseListModal
+        part={listPart}
+        dayLabel={title}
+        selected={listPart ? exercisesOf(draft, listPart) : []}
+        onToggle={name => listPart && setDraft(d => toggleExercise(d, listPart, name))}
+        onClose={() => setListPart(null)}
+      />
     </Modal>
   );
 }
@@ -171,15 +188,27 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  hint: { color: colors.textFaint, fontSize: 12, marginTop: -4, marginBottom: 10 },
   chip: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 999,
     backgroundColor: colors.surfaceHigh,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
   chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipMain: { paddingLeft: 18, paddingRight: 10, paddingVertical: 12 },
+  chipList: {
+    paddingLeft: 10,
+    paddingRight: 14,
+    paddingVertical: 12,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
+  },
+  chipListOn: { borderLeftColor: 'rgba(0,0,0,0.15)' },
+  chipListText: { color: colors.textDim, fontSize: 14, fontWeight: '700' },
   chipText: { color: colors.text, fontSize: 16, fontWeight: '700' },
   chipTextOn: { color: colors.bg },
   toggle: {
