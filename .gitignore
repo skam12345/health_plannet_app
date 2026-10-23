@@ -79,3 +79,6 @@ yarn-error.log
 
 # Release signing (keep private)
 keystore.properties
+
+# Play Console upload staging (AAB is a build output)
+docs/play-store/upload/*.aab
